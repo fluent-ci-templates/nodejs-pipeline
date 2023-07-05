@@ -3,6 +3,7 @@ import { npmBuild, npmInstall, npmTest, yarnInstall } from "./jobs.ts";
 
 const gitlabci = new GitlabCI()
   .image("node:latest")
+  .cache(["node_modules/"])
   .addJob("npm_install", npmInstall)
   .addJob("yarn_install", yarnInstall)
   .addJob("npm_build", npmBuild)
