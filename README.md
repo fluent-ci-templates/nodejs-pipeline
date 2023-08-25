@@ -34,7 +34,7 @@ Or simply:
 fluentci
 ```
 
-## Environment variables (Deno Deploy)
+## Environment variables
 
 | Variable          | Description                                | Default    |
 | ----------------- | ------------------------------------------ | ---------- |
