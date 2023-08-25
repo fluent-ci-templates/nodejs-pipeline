@@ -49,7 +49,7 @@ export const build = async (client: Client, src = ".") => {
   const nodeVersion = Deno.env.get("NODE_VERSION") || "18.16.1";
   const ctr = withDevbox(
     client
-      .pipeline(Job.test)
+      .pipeline(Job.build)
       .container()
       .from("alpine:latest")
       .withExec(["apk", "update"])
