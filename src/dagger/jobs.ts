@@ -40,10 +40,6 @@ export const build = async (client: Client, src = ".") => {
     .pipeline(Job.build)
     .container()
     .from("ghcr.io/fluent-ci-templates/devbox:latest")
-    .withExec(["apk", "update"])
-    .withExec(["apk", "add", "curl", "bash"])
-    .withMountedCache("/nix", client.cacheVolume("nix"))
-    .withMountedCache("/etc/nix", client.cacheVolume("nix-etc"))
     .withExec(["devbox", "global", "add", `nodejs@${nodeVersion}`])
     .withExec([
       "sh",
