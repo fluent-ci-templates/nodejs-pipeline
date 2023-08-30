@@ -1,5 +1,4 @@
 import Client from "@dagger.io/dagger";
-import { withDevbox } from "https://deno.land/x/nix_installer_pipeline@v0.3.6/src/dagger/steps.ts";
 
 export enum Job {
   test = "test",
@@ -10,20 +9,10 @@ export const test = async (client: Client, src = ".") => {
   const context = client.host().directory(src);
   const packageManager = Deno.env.get("PACKAGE_MANAGER") || "npm";
   const nodeVersion = Deno.env.get("NODE_VERSION") || "18.16.1";
-  const ctr = withDevbox(
-    client
-      .pipeline(Job.test)
-      .container()
-      .from("alpine:latest")
-      .withExec(["apk", "update"])
-      .withExec(["apk", "add", "curl", "bash"])
-      .withMountedCache("/nix", client.cacheVolume("nix"))
-      .withMountedCache("/etc/nix", client.cacheVolume("nix-etc"))
-  )
-    .withMountedCache(
-      "/root/.local/share/devbox/global",
-      client.cacheVolume("devbox-global")
-    )
+  const ctr = client
+    .pipeline(Job.test)
+    .container()
+    .from("ghcr.io/fluent-ci-templates/devbox:latest")
     .withExec(["devbox", "global", "add", `nodejs@${nodeVersion}`])
     .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
     .withEnvVariable("NIX_INSTALLER_NO_CHANNEL_ADD", "1")
@@ -47,20 +36,14 @@ export const build = async (client: Client, src = ".") => {
   const context = client.host().directory(src);
   const packageManager = Deno.env.get("PACKAGE_MANAGER") || "npm";
   const nodeVersion = Deno.env.get("NODE_VERSION") || "18.16.1";
-  const ctr = withDevbox(
-    client
-      .pipeline(Job.build)
-      .container()
-      .from("alpine:latest")
-      .withExec(["apk", "update"])
-      .withExec(["apk", "add", "curl", "bash"])
-      .withMountedCache("/nix", client.cacheVolume("nix"))
-      .withMountedCache("/etc/nix", client.cacheVolume("nix-etc"))
-  )
-    .withMountedCache(
-      "/root/.local/share/devbox/global",
-      client.cacheVolume("devbox-global")
-    )
+  const ctr = client
+    .pipeline(Job.build)
+    .container()
+    .from("ghcr.io/fluent-ci-templates/devbox:latest")
+    .withExec(["apk", "update"])
+    .withExec(["apk", "add", "curl", "bash"])
+    .withMountedCache("/nix", client.cacheVolume("nix"))
+    .withMountedCache("/etc/nix", client.cacheVolume("nix-etc"))
     .withExec(["devbox", "global", "add", `nodejs@${nodeVersion}`])
     .withExec([
       "sh",
