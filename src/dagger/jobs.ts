@@ -5,6 +5,8 @@ export enum Job {
   build = "build",
 }
 
+export const exclude = [".git", ".devbox", "node_modules", ".fluentci"];
+
 export const test = async (client: Client, src = ".") => {
   const context = client.host().directory(src);
   const packageManager = Deno.env.get("PACKAGE_MANAGER") || "npm";
@@ -16,9 +18,7 @@ export const test = async (client: Client, src = ".") => {
     .withExec(["devbox", "global", "add", `nodejs@${nodeVersion}`])
     .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
     .withEnvVariable("NIX_INSTALLER_NO_CHANNEL_ADD", "1")
-    .withDirectory("/app", context, {
-      exclude: [".git", ".devbox", "node_modules", ".fluentci"],
-    })
+    .withDirectory("/app", context, { exclude })
     .withWorkdir("/app")
     .withExec([
       "sh",
@@ -49,9 +49,7 @@ export const build = async (client: Client, src = ".") => {
     .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
     .withMountedCache("/app/dist", client.cacheVolume("dist"))
     .withEnvVariable("NIX_INSTALLER_NO_CHANNEL_ADD", "1")
-    .withDirectory("/app", context, {
-      exclude: [".git", ".devbox", "node_modules", ".fluentci"],
-    })
+    .withDirectory("/app", context, { exclude })
     .withWorkdir("/app")
     .withExec([
       "sh",
