@@ -31,7 +31,7 @@ export const test = async (
         "npm",
         "bun",
         "pnpm",
-        "yarnpkg.com",
+        "classic.yarnpkg.com",
       ])
       .withMountedCache(
         "/app/node_modules",
@@ -76,7 +76,7 @@ export const build = async (
         "npm",
         "bun",
         "pnpm",
-        "yarnpkg.com",
+        "classic.yarnpkg.com",
       ])
       .withMountedCache(
         "/app/node_modules",
@@ -123,7 +123,7 @@ export const run = async (
         "npm",
         "bun",
         "pnpm",
-        "yarnpkg.com",
+        "classic.yarnpkg.com",
       ])
       .withMountedCache(
         "/app/node_modules",
@@ -169,7 +169,7 @@ export const install = async (
         "npm",
         "bun",
         "pnpm",
-        "yarnpkg.com",
+        "classic.yarnpkg.com",
       ])
       .withMountedCache(
         "/app/node_modules",
