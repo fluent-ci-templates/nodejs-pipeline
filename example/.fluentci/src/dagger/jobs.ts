@@ -33,7 +33,10 @@ export const test = async (
         "pnpm",
         "yarnpkg.com",
       ])
-      .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
+      .withMountedCache(
+        "/app/node_modules",
+        client.cacheVolume(`node_modules_${pm}`)
+      )
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
       .withExec([pm, "install"])
@@ -75,7 +78,10 @@ export const build = async (
         "pnpm",
         "yarnpkg.com",
       ])
-      .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
+      .withMountedCache(
+        "/app/node_modules",
+        client.cacheVolume(`node_modules_${pm}`)
+      )
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
@@ -119,7 +125,10 @@ export const run = async (
         "pnpm",
         "yarnpkg.com",
       ])
-      .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
+      .withMountedCache(
+        "/app/node_modules",
+        client.cacheVolume(`node_modules_${pm}`)
+      )
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
@@ -162,7 +171,10 @@ export const install = async (
         "pnpm",
         "yarnpkg.com",
       ])
-      .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
+      .withMountedCache(
+        "/app/node_modules",
+        client.cacheVolume(`node_modules_${pm}`)
+      )
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
