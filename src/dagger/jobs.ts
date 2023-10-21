@@ -32,7 +32,9 @@ export const test = async (
         "bun",
         "pnpm",
         "classic.yarnpkg.com",
+        "rtx",
       ])
+      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
       .withMountedCache(
         "/app/node_modules",
         client.cacheVolume(`node_modules_${pm}`)
@@ -77,7 +79,9 @@ export const build = async (
         "bun",
         "pnpm",
         "classic.yarnpkg.com",
+        "rtx",
       ])
+      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
       .withMountedCache(
         "/app/node_modules",
         client.cacheVolume(`node_modules_${pm}`)
@@ -124,7 +128,9 @@ export const run = async (
         "bun",
         "pnpm",
         "classic.yarnpkg.com",
+        "rtx",
       ])
+      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
       .withMountedCache(
         "/app/node_modules",
         client.cacheVolume(`node_modules_${pm}`)
@@ -170,7 +176,9 @@ export const install = async (
         "bun",
         "pnpm",
         "classic.yarnpkg.com",
+        "rtx",
       ])
+      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
       .withMountedCache(
         "/app/node_modules",
         client.cacheVolume(`node_modules_${pm}`)
