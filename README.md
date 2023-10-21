@@ -44,10 +44,39 @@ fluentci
 
 ## Jobs
 
-| Job    | Description         |
-| ------ | ------------------- |
-| test   | Run the tests       |
-| build  | Build the project   |
+| Job     | Description          |
+| ------- | -------------------- |
+| build   | Build the project    |
+| install | Install dependencies |
+| test    | Run the tests        |
+| run     | Run a custom task    |
+
+```graphql
+build(
+  nodeVersion: String!, 
+  packageManager: String!, 
+  src: String!
+): String
+
+install(
+  nodeVersion: String!,
+  packageManager: String!, 
+  src: String!
+): String
+
+run(
+  nodeVersion: String!, 
+  packageManager: String!, 
+  src: String!, 
+  task: String!
+): String
+
+test(
+  nodeVersion: String!, 
+  packageManager: String!, 
+  src: String!
+): String
+```
 
 ## Programmatic usage
 
