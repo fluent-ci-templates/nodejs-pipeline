@@ -24,8 +24,15 @@ export const test = async (
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
       .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec(["pkgx", "install", `node@${version}`, "npm", "bun", "pnpm"])
-      .withExec(["npm", "install", "-g", "yarn"])
+      .withExec([
+        "pkgx",
+        "install",
+        `node@${version}`,
+        "npm",
+        "bun",
+        "pnpm",
+        "yarnpkg.com",
+      ])
       .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
@@ -59,8 +66,15 @@ export const build = async (
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
       .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec(["pkgx", "install", `node@${version}`, "npm", "bun"])
-      .withExec(["npm", "install", "-g", "yarn", "pnpm"])
+      .withExec([
+        "pkgx",
+        "install",
+        `node@${version}`,
+        "npm",
+        "bun",
+        "pnpm",
+        "yarnpkg.com",
+      ])
       .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
@@ -96,8 +110,15 @@ export const run = async (
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
       .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec(["pkgx", "install", `node@${version}`, "npm", "bun", "pnpm"])
-      .withExec(["npm", "install", "-g", "yarn"])
+      .withExec([
+        "pkgx",
+        "install",
+        `node@${version}`,
+        "npm",
+        "bun",
+        "pnpm",
+        "yarnpkg.com",
+      ])
       .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
@@ -132,8 +153,15 @@ export const install = async (
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
       .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec(["pkgx", "install", `node@${version}`, "npm", "bun", "pnpm"])
-      .withExec(["npm", "install", "-g", "yarn"])
+      .withExec([
+        "pkgx",
+        "install",
+        `node@${version}`,
+        "npm",
+        "bun",
+        "pnpm",
+        "yarnpkg.com",
+      ])
       .withMountedCache("/app/node_modules", client.cacheVolume("node_modules"))
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
