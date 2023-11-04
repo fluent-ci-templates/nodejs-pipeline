@@ -115,7 +115,7 @@ export const run = async (
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
     const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
     const ctr = client
-      .pipeline(Job.build)
+      .pipeline(Job.run)
       .container()
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
@@ -163,7 +163,7 @@ export const install = async (
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
     const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
     const ctr = client
-      .pipeline(Job.build)
+      .pipeline(Job.install)
       .container()
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
