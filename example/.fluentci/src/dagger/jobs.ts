@@ -1,21 +1,34 @@
-import Client, { connect } from "../../deps.ts";
+import { Directory, Container } from "../../deps.ts";
+import { Client } from "../../sdk/client.gen.ts";
+import { connect } from "../../sdk/connect.ts";
+import { getDirectory } from "./lib.ts";
 
 export enum Job {
   test = "test",
   build = "build",
   run = "run",
   install = "install",
+  dev = "dev",
 }
 
 export const exclude = [".git", ".devbox", "node_modules", ".fluentci"];
 
-export const test = async (
-  src = ".",
+/**
+ * @function
+ * @description Run tests
+ * @param {string | Directory} src
+ * @param {string} packageManager
+ * @param {string} nodeVersion
+ * @returns {Promise<string>}
+ */
+export async function test(
+  src: Directory | string | undefined = ".",
   packageManager?: string,
   nodeVersion?: string
-) => {
+): Promise<string> {
+  let result = "";
   await connect(async (client: Client) => {
-    const context = client.host().directory(src);
+    const context = getDirectory(client, src);
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
     const version = Deno.env.get("NODE_VERSION") || nodeVersion || "v18.16.1";
     const ctr = client
@@ -49,20 +62,27 @@ export const test = async (
       ])
       .withExec([pm, "run", "test"]);
 
-    const result = await ctr.stdout();
-
-    console.log(result);
+    result = await ctr.stdout();
   });
-  return "Done";
-};
+  return result;
+}
 
-export const build = async (
-  src = ".",
+/**
+ * @function
+ * @description Build the project
+ * @param {string | Directory} src
+ * @param {string} packageManager
+ * @param {string} nodeVersion
+ * @returns {Promise<Directory | string>}
+ */
+export async function build(
+  src: Directory | string | undefined = ".",
   packageManager?: string,
   nodeVersion?: string
-) => {
+): Promise<Directory | string> {
+  let id = "";
   await connect(async (client: Client) => {
-    const context = client.host().directory(src);
+    const context = getDirectory(client, src);
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
     const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
     const ctr = client
@@ -86,6 +106,7 @@ export const build = async (
         "/app/node_modules",
         client.cacheVolume(`node_modules_${pm}`)
       )
+      .withExec(["mkdir", "-p", "/app/dist"])
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
       .withWorkdir("/app")
@@ -95,27 +116,37 @@ export const build = async (
         "[ -f client.gen.ts ] && rm client.gen.ts || true",
       ])
       .withExec([pm, "install"])
-      .withExec([pm, "run", "build"]);
+      .withExec([pm, "run", "build"])
+      .withExec(["cp", "-r", "dist", "/dist"]);
 
-    const result = await ctr.stdout();
+    await ctr.stdout();
 
-    console.log(result);
+    id = await ctr.directory("/dist").id();
   });
-  return "Done";
-};
+  return id;
+}
 
-export const run = async (
-  src = ".",
+/**
+ * @function
+ * @description Run a task
+ * @param {string | Directory} src
+ * @param {string} packageManager
+ * @param {string} nodeVersion
+ * @returns {Promise<string>}
+ */
+export async function run(
+  src: Directory | string | undefined = ".",
   task: string,
   packageManager?: string,
   nodeVersion?: string
-) => {
+): Promise<string> {
+  let result = "";
   await connect(async (client: Client) => {
-    const context = client.host().directory(src);
+    const context = getDirectory(client, src);
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
     const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
     const ctr = client
-      .pipeline(Job.build)
+      .pipeline(Job.run)
       .container()
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
@@ -146,24 +177,31 @@ export const run = async (
       .withExec([pm, "install"])
       .withExec([pm, "run", task]);
 
-    const result = await ctr.stdout();
-
-    console.log(result);
+    result = await ctr.stdout();
   });
-  return "Done";
-};
+  return result;
+}
 
-export const install = async (
-  src = ".",
+/**
+ * @function
+ * @description Install dependencies
+ * @param {string | Directory} src
+ * @param {string} packageManager
+ * @param {string} nodeVersion
+ * @returns {Promise<Container | string>}
+ */
+export async function install(
+  src: Directory | string | undefined = ".",
   packageManager?: string,
   nodeVersion?: string
-) => {
+): Promise<Container | string> {
+  let id = "";
   await connect(async (client: Client) => {
-    const context = client.host().directory(src);
+    const context = getDirectory(client, src);
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
     const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
     const ctr = client
-      .pipeline(Job.build)
+      .pipeline(Job.install)
       .container()
       .from("pkgxdev/pkgx:latest")
       .withExec(["apt-get", "update"])
@@ -188,31 +226,75 @@ export const install = async (
       .withWorkdir("/app")
       .withExec([pm, "install"]);
 
-    const result = await ctr.stdout();
+    await ctr.stdout();
 
-    console.log(result);
+    id = await ctr.id();
   });
-  return "Done";
-};
+  return id;
+}
 
-export type JobExec =
-  | ((
-      src?: string,
-      packageManager?: string,
-      nodeVersion?: string
-    ) => Promise<string>)
-  | ((
-      src: string,
-      task: string,
-      packageManager?: string,
-      nodeVersion?: string
-    ) => Promise<string>);
+/**
+ * @function
+ * @description Returns a Container with Node.js installed
+ * @param {string | Directory} src
+ * @param {string} packageManager
+ * @param {string} nodeVersion
+ * @returns {Promise<Container | string>}
+ */
+export async function dev(
+  src: Directory | string | undefined = ".",
+  packageManager?: string,
+  nodeVersion?: string
+): Promise<Container | string> {
+  let id = "";
+  await connect(async (client: Client) => {
+    const context = getDirectory(client, src);
+    const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
+    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+    const ctr = client
+      .pipeline(Job.install)
+      .container()
+      .from("pkgxdev/pkgx:latest")
+      .withExec(["apt-get", "update"])
+      .withExec(["apt-get", "install", "-y", "ca-certificates"])
+      .withExec([
+        "pkgx",
+        "install",
+        `node@${version}`,
+        "npm",
+        "bun",
+        "pnpm",
+        "classic.yarnpkg.com",
+        "rtx",
+      ])
+      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
+      .withMountedCache(
+        "/app/node_modules",
+        client.cacheVolume(`node_modules_${pm}`)
+      )
+      .withMountedCache("/app/dist", client.cacheVolume("dist"))
+      .withDirectory("/app", context, { exclude })
+      .withWorkdir("/app")
+      .withExec([pm, "install"]);
+
+    await ctr.stdout();
+
+    id = await ctr.id();
+  });
+  return id;
+}
+
+export type JobExec = (
+  src?: Directory | string,
+  ...args: string[]
+) => Promise<string | Container | Directory>;
 
 export const runnableJobs: Record<Job, JobExec> = {
   [Job.test]: test,
   [Job.build]: build,
   [Job.run]: run,
   [Job.install]: install,
+  [Job.dev]: dev,
 };
 
 export const jobDescriptions: Record<Job, string> = {
@@ -220,4 +302,5 @@ export const jobDescriptions: Record<Job, string> = {
   [Job.build]: "Build the project",
   [Job.run]: "Run a task",
   [Job.install]: "Install dependencies",
+  [Job.dev]: "Returns a Container with Node.js installed",
 };
