@@ -274,8 +274,7 @@ export async function dev(
       )
       .withMountedCache("/app/dist", client.cacheVolume("dist"))
       .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app")
-      .withExec([pm, "install"]);
+      .withWorkdir("/app");
 
     await ctr.stdout();
 
