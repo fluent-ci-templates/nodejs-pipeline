@@ -267,7 +267,7 @@ export async function dev(
         "classic.yarnpkg.com",
         "rtx",
       ])
-      .withExec(["sh", "-c", `echo 'eval "$(rtx activate bash)" >> ~/.bashrc`])
+      .withExec(["sh", "-c", `echo 'eval "$(rtx activate bash)"' >> ~/.bashrc`])
       .withMountedCache(
         "/app/node_modules",
         client.cacheVolume(`node_modules_${pm}`)
