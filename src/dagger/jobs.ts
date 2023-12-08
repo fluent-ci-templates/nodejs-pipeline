@@ -30,7 +30,7 @@ export async function test(
   await connect(async (client: Client) => {
     const context = getDirectory(client, src);
     const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "v18.16.1";
+    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
     const ctr = client
       .pipeline(Job.test)
       .container()

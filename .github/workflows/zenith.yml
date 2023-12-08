@@ -27,7 +27,7 @@ jobs:
           dagger query --doc test.gql
           dagger query --doc build.gql
           dagger query --doc run.gql
-          dagger call test --src .
-          dagger call build --src .
-          dagger call run --src . --task build
+          dagger call test --src . --package-manager ${{ matrix.package_manager }}
+          dagger call build --src . --package-manager ${{ matrix.package_manager }}
+          dagger call run --src . --task build --package-manager ${{ matrix.package_manager }}
         working-directory: example
