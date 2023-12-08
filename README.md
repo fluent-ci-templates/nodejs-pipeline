@@ -35,6 +35,15 @@ Or simply:
 fluentci
 ```
 
+## Dagger Module
+
+Use as a [Dagger](https://dagger.io) module:
+
+```bash
+dagger mod install github.com/fluent-ci-templates/nodejs-pipeline@mod
+```
+
+
 ## Environment variables
 
 | Variable          | Description                                | Default    |
@@ -51,31 +60,37 @@ fluentci
 | test    | Run the tests        |
 | run     | Run a custom task    |
 
-```graphql
-build(
-  nodeVersion: String!, 
-  packageManager: String!, 
-  src: String!
-): String
+```typescript
+test(
+  src: Directory | string | undefined = ".",
+  packageManager?: string,
+  nodeVersion?: string
+): Promise<string>
 
-install(
-  nodeVersion: String!,
-  packageManager: String!, 
-  src: String!
-): String
+build(
+  src: Directory | string | undefined = ".",
+  packageManager?: string,
+  nodeVersion?: string
+): Promise<Directory | string>
 
 run(
-  nodeVersion: String!, 
-  packageManager: String!, 
-  src: String!, 
-  task: String!
-): String
+  src: Directory | string | undefined = ".",
+  task: string,
+  packageManager?: string,
+  nodeVersion?: string
+): Promise<string>
 
-test(
-  nodeVersion: String!, 
-  packageManager: String!, 
-  src: String!
-): String
+install(
+  src: Directory | string | undefined = ".",
+  packageManager?: string,
+  nodeVersion?: string
+): Promise<Container | string>
+
+dev(
+  src: Directory | string | undefined = ".",
+  packageManager?: string,
+  nodeVersion?: string
+): Promise<Container | string>
 ```
 
 ## Programmatic usage
@@ -83,7 +98,7 @@ test(
 You can also use this pipeline programmatically:
 
 ```ts
-import { test, build } from "https://pkg.fluentci.io/nodejs_pipeline@v0.5.0/mod.ts";
+import { test, build } from "https://pkg.fluentci.io/nodejs_pipeline@v0.6.0/mod.ts";
 
 await test();
 await build();
