@@ -4,7 +4,7 @@ name: Zenith Example
 on:
   push:
     branches:
-      - zenith
+      - main
 
 jobs:
   tests:
@@ -27,4 +27,7 @@ jobs:
           dagger query --doc test.gql
           dagger query --doc build.gql
           dagger query --doc run.gql
+          dagger call test --src .
+          dagger call build --src .
+          dagger call run --src . --task build
         working-directory: example

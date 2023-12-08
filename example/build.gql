@@ -1,5 +1,7 @@
 {
   nodejs {
-    build(src: ".", packageManager: "npm", nodeVersion: "18.16.1")
+    build(src: ".", packageManager: "npm", nodeVersion: "18.16.1") {
+      id
+    }
   }
 }
