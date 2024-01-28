@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Setup Dagger Zenith
         run: |
-          curl -L https://dl.dagger.io/dagger/install.sh | DAGGER_VERSION=0.9.3 sh
+          curl -L https://dl.dagger.io/dagger/install.sh | DAGGER_VERSION=0.9.7 sh
           sudo mv bin/dagger /usr/local/bin
           dagger version
       - name: Run Dagger Pipelines
@@ -24,9 +24,6 @@ jobs:
           sed -i 's/npm/${{ matrix.package_manager }}/g' test.gql
           sed -i 's/npm/${{ matrix.package_manager }}/g' build.gql
           sed -i 's/npm/${{ matrix.package_manager }}/g' run.gql
-          dagger query --doc test.gql
-          dagger query --doc build.gql
-          dagger query --doc run.gql
           dagger call test --src . --package-manager ${{ matrix.package_manager }}
           dagger call build --src . --package-manager ${{ matrix.package_manager }}
           dagger call run --src . --task build --package-manager ${{ matrix.package_manager }}

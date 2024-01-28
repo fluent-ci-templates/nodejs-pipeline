@@ -1,6 +1,5 @@
 import { Directory, Container } from "../../deps.ts";
-import { Client } from "../../sdk/client.gen.ts";
-import { connect } from "../../sdk/connect.ts";
+import { dag } from "../../sdk/client.gen.ts";
 import { getDirectory } from "./lib.ts";
 
 export enum Job {
@@ -26,44 +25,37 @@ export async function test(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<string> {
-  let result = "";
-  await connect(async (client: Client) => {
-    const context = getDirectory(client, src);
-    const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
-    const ctr = client
-      .pipeline(Job.test)
-      .container()
-      .from("pkgxdev/pkgx:latest")
-      .withExec(["apt-get", "update"])
-      .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec([
-        "pkgx",
-        "install",
-        `node@${version}`,
-        "npm",
-        "bun",
-        "pnpm",
-        "classic.yarnpkg.com",
-        "rtx",
-      ])
-      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
-      .withMountedCache(
-        "/app/node_modules",
-        client.cacheVolume(`node_modules_${pm}`)
-      )
-      .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app")
-      .withExec([pm, "install"])
-      .withExec([
-        "sh",
-        "-c",
-        "[ -f client.gen.ts ] && rm client.gen.ts || true",
-      ])
-      .withExec([pm, "run", "test"]);
+  const context = await getDirectory(dag, src);
+  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const ctr = dag
+    .pipeline(Job.test)
+    .container()
+    .from("pkgxdev/pkgx:latest")
+    .withExec(["apt-get", "update"])
+    .withExec(["apt-get", "install", "-y", "ca-certificates"])
+    .withExec([
+      "pkgx",
+      "install",
+      `node@${version}`,
+      "npm",
+      "bun",
+      "pnpm",
+      "classic.yarnpkg.com",
+      "rtx",
+    ])
+    .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
+    .withMountedCache(
+      "/app/node_modules",
+      dag.cacheVolume(`node_modules_${pm}`)
+    )
+    .withDirectory("/app", context, { exclude })
+    .withWorkdir("/app")
+    .withExec([pm, "install"])
+    .withExec(["sh", "-c", "[ -f client.gen.ts ] && rm client.gen.ts || true"])
+    .withExec([pm, "run", "test"]);
 
-    result = await ctr.stdout();
-  });
+  const result = await ctr.stdout();
   return result;
 }
 
@@ -80,49 +72,42 @@ export async function build(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<Directory | string> {
-  let id = "";
-  await connect(async (client: Client) => {
-    const context = getDirectory(client, src);
-    const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
-    const ctr = client
-      .pipeline(Job.build)
-      .container()
-      .from("pkgxdev/pkgx:latest")
-      .withExec(["apt-get", "update"])
-      .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec([
-        "pkgx",
-        "install",
-        `node@${version}`,
-        "npm",
-        "bun",
-        "pnpm",
-        "classic.yarnpkg.com",
-        "rtx",
-      ])
-      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
-      .withMountedCache(
-        "/app/node_modules",
-        client.cacheVolume(`node_modules_${pm}`)
-      )
-      .withExec(["mkdir", "-p", "/app/dist"])
-      .withMountedCache("/app/dist", client.cacheVolume("dist"))
-      .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app")
-      .withExec([
-        "sh",
-        "-c",
-        "[ -f client.gen.ts ] && rm client.gen.ts || true",
-      ])
-      .withExec([pm, "install"])
-      .withExec([pm, "run", "build"])
-      .withExec(["cp", "-r", "dist", "/dist"]);
+  const context = await getDirectory(dag, src);
+  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const ctr = dag
+    .pipeline(Job.build)
+    .container()
+    .from("pkgxdev/pkgx:latest")
+    .withExec(["apt-get", "update"])
+    .withExec(["apt-get", "install", "-y", "ca-certificates"])
+    .withExec([
+      "pkgx",
+      "install",
+      `node@${version}`,
+      "npm",
+      "bun",
+      "pnpm",
+      "classic.yarnpkg.com",
+      "rtx",
+    ])
+    .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
+    .withMountedCache(
+      "/app/node_modules",
+      dag.cacheVolume(`node_modules_${pm}`)
+    )
+    .withExec(["mkdir", "-p", "/app/dist"])
+    .withMountedCache("/app/dist", dag.cacheVolume("dist"))
+    .withDirectory("/app", context, { exclude })
+    .withWorkdir("/app")
+    .withExec(["sh", "-c", "[ -f client.gen.ts ] && rm client.gen.ts || true"])
+    .withExec([pm, "install"])
+    .withExec([pm, "run", "build"])
+    .withExec(["cp", "-r", "dist", "/dist"]);
 
-    await ctr.stdout();
+  await ctr.stdout();
 
-    id = await ctr.directory("/dist").id();
-  });
+  const id = await ctr.directory("/dist").id();
   return id;
 }
 
@@ -140,45 +125,38 @@ export async function run(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<string> {
-  let result = "";
-  await connect(async (client: Client) => {
-    const context = getDirectory(client, src);
-    const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
-    const ctr = client
-      .pipeline(Job.run)
-      .container()
-      .from("pkgxdev/pkgx:latest")
-      .withExec(["apt-get", "update"])
-      .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec([
-        "pkgx",
-        "install",
-        `node@${version}`,
-        "npm",
-        "bun",
-        "pnpm",
-        "classic.yarnpkg.com",
-        "rtx",
-      ])
-      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
-      .withMountedCache(
-        "/app/node_modules",
-        client.cacheVolume(`node_modules_${pm}`)
-      )
-      .withMountedCache("/app/dist", client.cacheVolume("dist"))
-      .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app")
-      .withExec([
-        "sh",
-        "-c",
-        "[ -f client.gen.ts ] && rm client.gen.ts || true",
-      ])
-      .withExec([pm, "install"])
-      .withExec([pm, "run", task]);
+  const context = await getDirectory(dag, src);
+  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const ctr = dag
+    .pipeline(Job.run)
+    .container()
+    .from("pkgxdev/pkgx:latest")
+    .withExec(["apt-get", "update"])
+    .withExec(["apt-get", "install", "-y", "ca-certificates"])
+    .withExec([
+      "pkgx",
+      "install",
+      `node@${version}`,
+      "npm",
+      "bun",
+      "pnpm",
+      "classic.yarnpkg.com",
+      "rtx",
+    ])
+    .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
+    .withMountedCache(
+      "/app/node_modules",
+      dag.cacheVolume(`node_modules_${pm}`)
+    )
+    .withMountedCache("/app/dist", dag.cacheVolume("dist"))
+    .withDirectory("/app", context, { exclude })
+    .withWorkdir("/app")
+    .withExec(["sh", "-c", "[ -f client.gen.ts ] && rm client.gen.ts || true"])
+    .withExec([pm, "install"])
+    .withExec([pm, "run", task]);
 
-    result = await ctr.stdout();
-  });
+  const result = await ctr.stdout();
   return result;
 }
 
@@ -195,41 +173,38 @@ export async function install(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<Container | string> {
-  let id = "";
-  await connect(async (client: Client) => {
-    const context = getDirectory(client, src);
-    const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
-    const ctr = client
-      .pipeline(Job.install)
-      .container()
-      .from("pkgxdev/pkgx:latest")
-      .withExec(["apt-get", "update"])
-      .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec([
-        "pkgx",
-        "install",
-        `node@${version}`,
-        "npm",
-        "bun",
-        "pnpm",
-        "classic.yarnpkg.com",
-        "rtx",
-      ])
-      .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
-      .withMountedCache(
-        "/app/node_modules",
-        client.cacheVolume(`node_modules_${pm}`)
-      )
-      .withMountedCache("/app/dist", client.cacheVolume("dist"))
-      .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app")
-      .withExec([pm, "install"]);
+  const context = await getDirectory(dag, src);
+  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const ctr = dag
+    .pipeline(Job.install)
+    .container()
+    .from("pkgxdev/pkgx:latest")
+    .withExec(["apt-get", "update"])
+    .withExec(["apt-get", "install", "-y", "ca-certificates"])
+    .withExec([
+      "pkgx",
+      "install",
+      `node@${version}`,
+      "npm",
+      "bun",
+      "pnpm",
+      "classic.yarnpkg.com",
+      "rtx",
+    ])
+    .withExec(["sh", "-c", "echo 'eval $(rtx activate bash)' >> ~/.bashrc"])
+    .withMountedCache(
+      "/app/node_modules",
+      dag.cacheVolume(`node_modules_${pm}`)
+    )
+    .withMountedCache("/app/dist", dag.cacheVolume("dist"))
+    .withDirectory("/app", context, { exclude })
+    .withWorkdir("/app")
+    .withExec([pm, "install"]);
 
-    await ctr.stdout();
+  await ctr.stdout();
 
-    id = await ctr.id();
-  });
+  const id = await ctr.id();
   return id;
 }
 
@@ -246,40 +221,37 @@ export async function dev(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<Container | string> {
-  let id = "";
-  await connect(async (client: Client) => {
-    const context = getDirectory(client, src);
-    const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-    const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
-    const ctr = client
-      .pipeline(Job.install)
-      .container()
-      .from("pkgxdev/pkgx:latest")
-      .withExec(["apt-get", "update"])
-      .withExec(["apt-get", "install", "-y", "ca-certificates"])
-      .withExec([
-        "pkgx",
-        "install",
-        `node@${version}`,
-        "npm",
-        "bun",
-        "pnpm",
-        "classic.yarnpkg.com",
-        "rtx",
-      ])
-      .withExec(["sh", "-c", `echo 'eval "$(rtx activate bash)"' >> ~/.bashrc`])
-      .withMountedCache(
-        "/app/node_modules",
-        client.cacheVolume(`node_modules_${pm}`)
-      )
-      .withMountedCache("/app/dist", client.cacheVolume("dist"))
-      .withDirectory("/app", context, { exclude })
-      .withWorkdir("/app");
+  const context = await getDirectory(dag, src);
+  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const ctr = dag
+    .pipeline(Job.install)
+    .container()
+    .from("pkgxdev/pkgx:latest")
+    .withExec(["apt-get", "update"])
+    .withExec(["apt-get", "install", "-y", "ca-certificates"])
+    .withExec([
+      "pkgx",
+      "install",
+      `node@${version}`,
+      "npm",
+      "bun",
+      "pnpm",
+      "classic.yarnpkg.com",
+      "rtx",
+    ])
+    .withExec(["sh", "-c", `echo 'eval "$(rtx activate bash)"' >> ~/.bashrc`])
+    .withMountedCache(
+      "/app/node_modules",
+      dag.cacheVolume(`node_modules_${pm}`)
+    )
+    .withMountedCache("/app/dist", dag.cacheVolume("dist"))
+    .withDirectory("/app", context, { exclude })
+    .withWorkdir("/app");
 
-    await ctr.stdout();
+  await ctr.stdout();
 
-    id = await ctr.id();
-  });
+  const id = await ctr.id();
   return id;
 }
 
