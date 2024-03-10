@@ -1,5 +1,8 @@
-import { Directory, Container } from "../../deps.ts";
-import { dag } from "../../sdk/client.gen.ts";
+/**
+ * @module nodejs
+ * @description This module provides a set of functions for Node.js projects
+ */
+import { Directory, Container, dag, env } from "../../deps.ts";
 import { getDirectory } from "./lib.ts";
 
 export enum Job {
@@ -13,6 +16,8 @@ export enum Job {
 export const exclude = [".git", ".devbox", "node_modules", ".fluentci"];
 
 /**
+ * Run tests
+ *
  * @function
  * @description Run tests
  * @param {string | Directory} src
@@ -25,9 +30,9 @@ export async function test(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<string> {
-  const context = await getDirectory(dag, src);
-  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const context = await getDirectory(src);
+  const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
     .pipeline(Job.test)
     .container()
@@ -55,11 +60,12 @@ export async function test(
     .withExec(["sh", "-c", "[ -f client.gen.ts ] && rm client.gen.ts || true"])
     .withExec([pm, "run", "test"]);
 
-  const result = await ctr.stdout();
-  return result;
+  return ctr.stdout();
 }
 
 /**
+ * Build the project
+ *
  * @function
  * @description Build the project
  * @param {string | Directory} src
@@ -72,9 +78,9 @@ export async function build(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<Directory | string> {
-  const context = await getDirectory(dag, src);
-  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const context = await getDirectory(src);
+  const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
     .pipeline(Job.build)
     .container()
@@ -107,11 +113,12 @@ export async function build(
 
   await ctr.stdout();
 
-  const id = await ctr.directory("/dist").id();
-  return id;
+  return ctr.directory("/dist").id();
 }
 
 /**
+ * Run a task
+ *
  * @function
  * @description Run a task
  * @param {string | Directory} src
@@ -125,9 +132,9 @@ export async function run(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<string> {
-  const context = await getDirectory(dag, src);
-  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const context = await getDirectory(src);
+  const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
     .pipeline(Job.run)
     .container()
@@ -156,11 +163,12 @@ export async function run(
     .withExec([pm, "install"])
     .withExec([pm, "run", task]);
 
-  const result = await ctr.stdout();
-  return result;
+  return ctr.stdout();
 }
 
 /**
+ * Install dependencies
+ *
  * @function
  * @description Install dependencies
  * @param {string | Directory} src
@@ -173,9 +181,9 @@ export async function install(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<Container | string> {
-  const context = await getDirectory(dag, src);
-  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const context = await getDirectory(src);
+  const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
     .pipeline(Job.install)
     .container()
@@ -209,6 +217,8 @@ export async function install(
 }
 
 /**
+ * Returns a Container with Node.js installed
+ *
  * @function
  * @description Returns a Container with Node.js installed
  * @param {string | Directory} src
@@ -221,9 +231,9 @@ export async function dev(
   packageManager?: string,
   nodeVersion?: string
 ): Promise<Container | string> {
-  const context = await getDirectory(dag, src);
-  const pm = Deno.env.get("PACKAGE_MANAGER") || packageManager || "npm";
-  const version = Deno.env.get("NODE_VERSION") || nodeVersion || "18.16.1";
+  const context = await getDirectory(src);
+  const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
+  const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
     .pipeline(Job.install)
     .container()

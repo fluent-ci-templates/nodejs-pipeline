@@ -1,5 +1,0 @@
-{
-  nodejs {
-    build(src: ".", packageManager: "npm", nodeVersion: "18.16.1")
-  }
-}

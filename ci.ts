@@ -1,7 +1,4 @@
-import {
-  test,
-  build,
-} from "https://pkg.fluentci.io/nodejs_pipeline@v0.6.3/mod.ts";
+import { test, build } from "jsr:@fluentci/nodejs";
 
 await test();
 await build();

@@ -2,8 +2,11 @@
 
 [![fluentci pipeline](https://img.shields.io/badge/dynamic/json?label=pkg.fluentci.io&labelColor=%23000&color=%23460cf1&url=https%3A%2F%2Fapi.fluentci.io%2Fv1%2Fpipeline%2Fnodejs_pipeline&query=%24.version)](https://pkg.fluentci.io/nodejs_pipeline)
 [![deno module](https://shield.deno.dev/x/nodejs_pipeline)](https://deno.land/x/nodejs_pipeline)
-![deno compatibility](https://shield.deno.dev/deno/^1.37)
+![deno compatibility](https://shield.deno.dev/deno/^1.41)
+[![dagger-min-version](https://img.shields.io/badge/dagger-v0.10.0-blue?color=3D66FF&labelColor=000000)](https://dagger.io)
+[![](https://jsr.io/badges/@fluentci/nodejs)](https://jsr.io/@fluentci/nodejs)
 [![codecov](https://img.shields.io/codecov/c/gh/fluent-ci-templates/nodejs-pipeline)](https://codecov.io/gh/fluent-ci-templates/nodejs-pipeline)
+[![ci](https://github.com/fluent-ci-templates/nodejs-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/fluent-ci-templates/nodejs-pipeline/actions/workflows/ci.yml)
 
 A ready-to-use CI/CD Pipeline for your [Node.js](https://nodejs.org/en) projects.
 
@@ -35,23 +38,32 @@ Or simply:
 fluentci
 ```
 
-## Dagger Module
+## 🧩 Dagger Module
 
 Use as a [Dagger](https://dagger.io) module:
 
 ```bash
-dagger mod install github.com/fluent-ci-templates/nodejs-pipeline@mod
+dagger install github.com/fluent-ci-templates/nodejs-pipeline@main
 ```
 
+Call a function from the module:
 
-## Environment variables
+```bash
+dagger -m github.com/fluent-ci-templates/nodejs-pipeline@main call \
+  test --src .
+
+dagger -m github.com/fluent-ci-templates/nodejs-pipeline@main call \
+  build --src .
+```
+
+## 🛠️ Environment variables
 
 | Variable          | Description                                | Default    |
 | ----------------- | ------------------------------------------ | ---------- |
 | NODE_VERSION      | Node version to use                        |  18.16.1   |
 | PACKAGE_MANAGER   | Package manager to use (npm, yarn, pnpm)   |  npm       |
 
-## Jobs
+## ✨ Jobs
 
 | Job     | Description          |
 | ------- | -------------------- |
@@ -93,12 +105,12 @@ dev(
 ): Promise<Container | string>
 ```
 
-## Programmatic usage
+## 👨‍💻 Programmatic usage
 
 You can also use this pipeline programmatically:
 
 ```ts
-import { test, build } from "https://pkg.fluentci.io/nodejs_pipeline@v0.6.3/mod.ts";
+import { test, build } from "jsr:@fluentci/nodejs";
 
 await test();
 await build();
