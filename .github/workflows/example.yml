@@ -24,6 +24,7 @@ jobs:
             build
             run build
           working-directory: example
+          dagger-version: 0.13.3
         env:
           PACKAGE_MANAGER: ${{ matrix.package_manager }}
       - name: Run Dagger Pipelines
