@@ -5,4 +5,4 @@ authors = [
 description = "CI/CD Plugin for Node.js"
 license = "MIT"
 name = "nodejs"
-version = "0.8.0"
+version = "0.8.1"
