@@ -2,8 +2,8 @@
  * @module nodejs
  * @description This module provides a set of functions for Node.js projects
  */
-import { Directory, Container, dag, env } from "../../deps.ts";
-import { getDirectory } from "./lib.ts";
+import { type Directory, type Container, dag, env } from "../deps.ts";
+import { getDirectory } from "./helpers.ts";
 
 export enum Job {
   test = "test",
@@ -34,7 +34,6 @@ export async function test(
   const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
   const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
-    .pipeline(Job.test)
     .container()
     .from("pkgxdev/pkgx:latest")
     .withExec(["apt-get", "update"])
@@ -82,7 +81,6 @@ export async function build(
   const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
   const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
-    .pipeline(Job.build)
     .container()
     .from("pkgxdev/pkgx:latest")
     .withExec(["apt-get", "update"])
@@ -136,7 +134,6 @@ export async function run(
   const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
   const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
-    .pipeline(Job.run)
     .container()
     .from("pkgxdev/pkgx:latest")
     .withExec(["apt-get", "update"])
@@ -185,7 +182,6 @@ export async function install(
   const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
   const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
-    .pipeline(Job.install)
     .container()
     .from("pkgxdev/pkgx:latest")
     .withExec(["apt-get", "update"])
@@ -235,7 +231,6 @@ export async function dev(
   const pm = env.get("PACKAGE_MANAGER") || packageManager || "npm";
   const version = env.get("NODE_VERSION") || nodeVersion || "18.16.1";
   const ctr = dag
-    .pipeline(Job.install)
     .container()
     .from("pkgxdev/pkgx:latest")
     .withExec(["apt-get", "update"])
