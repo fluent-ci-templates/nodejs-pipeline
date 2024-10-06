@@ -27,5 +27,5 @@ jobs:
         env:
           PACKAGE_MANAGER: ${{ matrix.package_manager }}
       - name: Run Dagger Pipelines
-        run: dagger run deno run -A ../src/dagger/runner.ts test build
+        run: dagger run deno run -A ../src/runner.ts test build
         working-directory: example
